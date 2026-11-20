@@ -1,3 +1,5 @@
+import axios from "axios";
+import {useState} from "react";
 import {
   View,
   Text,
@@ -10,9 +12,30 @@ import {
   Platform,
 } from "react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 import Animated,{ FadeIn, FadeOut,FadeInUp, FadeInDown } from 'react-native-reanimated';
 
 const Login = ({ navigation }) => {
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handlelogin = async () => {
+    try {
+      const user = await axios.post("http://10.166.107.55:8090/api/v1/auth/login",{email, password});
+
+      if(user.data.success) {
+        await AsyncStorage.setItem("token", user.data.token);
+        console.log("user login successfuly");
+        navigation.replace("home");
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image
@@ -61,6 +84,8 @@ const Login = ({ navigation }) => {
                   placeholder="Enter your email"
                   placeholderTextColor={"rgb(124, 114, 109)"}
                   style={styles.inputbox}
+                  value={email}
+                  onChangeText={setEmail}
                 />
               </Animated.View>
 
@@ -70,16 +95,18 @@ const Login = ({ navigation }) => {
                   placeholderTextColor={"rgb(124, 114, 109)"}
                   style={styles.inputbox}
                   secureTextEntry={true}
+                  value={password}
+                  onChangeText={setPassword}
                 />
               </Animated.View>
 
               <Animated.View entering={FadeInDown.delay(600).duration(1000).springify()} style={{marginVertical:10}}>
-                <TouchableOpacity style={styles.btn}>
+                <TouchableOpacity style={styles.btn} onPress={handlelogin}>
                   <Text style={{ color: "white", fontSize: 20 }}>Login</Text>
                 </TouchableOpacity>
               </Animated.View>
 
-              <View
+              <Animated.View entering={FadeInDown.delay(1000).duration(1000).springify()}
                 style={{
                   flexDirection: "row",
                   justifyContent: "center",
@@ -92,7 +119,7 @@ const Login = ({ navigation }) => {
                     Sign Up
                   </Text>
                 </TouchableOpacity>
-              </View>
+              </Animated.View>
             </View>
           </View>
         </ScrollView>
